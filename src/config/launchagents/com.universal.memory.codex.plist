@@ -8,17 +8,17 @@
     <key>ProgramArguments</key>
     <array>
         <string>/usr/bin/python3</string>
-        <string>/Users/philipdagostino/.universal-memory/analyzers/codex-analyzer.py</string>
+        <string>$HOME/.universal-memory/analyzers/codex-analyzer.py</string>
     </array>
 
     <key>StartInterval</key>
     <integer>3600</integer>
 
     <key>StandardOutPath</key>
-    <string>/Users/philipdagostino/.universal-memory/logs/launchd-codex-stdout.log</string>
+    <string>$HOME/.universal-memory/logs/launchd-codex-stdout.log</string>
 
     <key>StandardErrorPath</key>
-    <string>/Users/philipdagostino/.universal-memory/logs/launchd-codex-stderr.log</string>
+    <string>$HOME/.universal-memory/logs/launchd-codex-stderr.log</string>
 
     <key>RunAtLoad</key>
     <true/>

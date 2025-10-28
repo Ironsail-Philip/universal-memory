@@ -89,6 +89,8 @@ cp "$REPO_DIR/src/cli/uni-mem" "$INSTALL_DIR/"
 cp -r "$REPO_DIR/src/config/launchagents/"* "$INSTALL_DIR/config/launchagents/" 2>/dev/null || true
 cp "$REPO_DIR/scripts/codex-with-memory" "$INSTALL_DIR/"
 cp "$REPO_DIR/scripts/migrate-old-memories.py" "$INSTALL_DIR/"
+cp "$REPO_DIR/scripts/setup-launchagents.sh" "$INSTALL_DIR/"
+cp "$REPO_DIR/scripts/cleanup-legacy-agents.sh" "$INSTALL_DIR/"
 
 # Copy documentation
 cp -r "$REPO_DIR/docs/"* "$INSTALL_DIR/" 2>/dev/null || true
@@ -101,6 +103,8 @@ chmod +x "$INSTALL_DIR/analyzers/"*.py
 chmod +x "$INSTALL_DIR/hooks/"*.sh
 chmod +x "$INSTALL_DIR/hooks/"*.py
 chmod +x "$INSTALL_DIR/migrate-old-memories.py"
+chmod +x "$INSTALL_DIR/setup-launchagents.sh"
+chmod +x "$INSTALL_DIR/cleanup-legacy-agents.sh"
 
 # Initialize storage if it doesn't exist
 if [ ! -f "$INSTALL_DIR/memories.jsonl" ]; then
@@ -121,12 +125,20 @@ touch "$INSTALL_DIR/sessions/codex-processed.log"
 
 # Configure Claude Code hooks
 echo "🔵 Configuring Claude Code integration..."
-CLAUDE_SETTINGS="$HOME/.claude/settings.json"
 
-if [ -f "$CLAUDE_SETTINGS" ]; then
+# Check for settings.local.json first (takes precedence), then settings.json
+if [ -f "$HOME/.claude/settings.local.json" ]; then
+    CLAUDE_SETTINGS="$HOME/.claude/settings.local.json"
+elif [ -f "$HOME/.claude/settings.json" ]; then
+    CLAUDE_SETTINGS="$HOME/.claude/settings.json"
+else
+    CLAUDE_SETTINGS=""
+fi
+
+if [ -n "$CLAUDE_SETTINGS" ]; then
     # Check if we need to update the hook
     if grep -q "universal-memory" "$CLAUDE_SETTINGS" 2>/dev/null; then
-        echo -e "${GREEN}✓${NC} Claude Code hook already configured"
+        echo -e "${GREEN}✓${NC} Claude Code hook already configured in $(basename $CLAUDE_SETTINGS)"
     else
         echo "   Adding SessionStart hook to Claude Code..."
         # Backup existing settings
@@ -134,7 +146,7 @@ if [ -f "$CLAUDE_SETTINGS" ]; then
 
         # This is a simplified approach - in production, use proper JSON parsing
         # For now, inform user to manually add hook
-        echo -e "${YELLOW}⚠️  Please manually add the following to ~/.claude/settings.json:${NC}"
+        echo -e "${YELLOW}⚠️  Please manually add the following to $CLAUDE_SETTINGS:${NC}"
         echo ""
         echo '  "hooks": {'
         echo '    "SessionStart": [{'
@@ -146,6 +158,7 @@ if [ -f "$CLAUDE_SETTINGS" ]; then
         echo '    }]'
         echo '  }'
         echo ""
+        echo -e "${BLUE}💡 Tip:${NC} Claude uses settings.local.json if present, otherwise settings.json"
     fi
 else
     echo -e "${YELLOW}⚠️  Claude Code not found. Hook will be configured when you install Claude Code.${NC}"
@@ -203,10 +216,19 @@ EOF
     # Load LaunchAgents
     launchctl bootout gui/$(id -u)/com.universal.memory.claude 2>/dev/null || true
     launchctl bootout gui/$(id -u)/com.universal.memory.codex 2>/dev/null || true
-    launchctl bootstrap gui/$(id -u) "$HOME/Library/LaunchAgents/com.universal.memory.claude.plist"
-    launchctl bootstrap gui/$(id -u) "$HOME/Library/LaunchAgents/com.universal.memory.codex.plist"
 
-    echo -e "${GREEN}✓${NC} LaunchAgents configured and loaded"
+    # Try to bootstrap - may fail in sandboxed environments
+    if launchctl bootstrap gui/$(id -u) "$HOME/Library/LaunchAgents/com.universal.memory.claude.plist" 2>/dev/null && \
+       launchctl bootstrap gui/$(id -u) "$HOME/Library/LaunchAgents/com.universal.memory.codex.plist" 2>/dev/null; then
+        echo -e "${GREEN}✓${NC} LaunchAgents configured and loaded"
+    else
+        echo -e "${YELLOW}⚠️${NC}  LaunchAgent bootstrap failed (expected in sandboxed environments)"
+        echo ""
+        echo "   To enable hourly automatic extraction, run this command in Terminal:"
+        echo "   ~/.universal-memory/setup-launchagents.sh"
+        echo ""
+        echo "   Until then, analyzers will run manually when you execute them."
+    fi
 
 elif [[ "$OS" == "linux" ]]; then
     echo "⏰ Setting up automatic extraction (cron)..."
