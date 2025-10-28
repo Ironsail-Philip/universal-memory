@@ -1,0 +1,50 @@
+# Universal AI Memory - Git Ignore
+# Exclude user data and runtime files from version control
+
+# User's actual memories (NEVER commit these!)
+memories.jsonl
+*.jsonl
+
+# User data directories
+logs/
+sessions/
+index/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Test data
+test-memories.jsonl
+test-data/
+
+# Local development
+.env
+.env.local
+local-testing/
+
+# Backup files
+*.backup
+*.bak
+*.old
+
+# Distribution builds
+dist/
+build/
+*.egg-info/

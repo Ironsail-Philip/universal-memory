@@ -1,0 +1,419 @@
+#!/usr/bin/env python3
+"""
+Universal Memory CLI
+Works from both Claude Code and Codex contexts
+"""
+
+import sys
+import json
+import os
+from pathlib import Path
+from datetime import datetime
+
+# Add analyzers to path for imports
+sys.path.insert(0, str(Path.home() / ".universal-memory" / "analyzers"))
+import common
+
+def detect_source():
+    """Auto-detect which AI system we're running from"""
+    # Check for Claude Code environment
+    if os.environ.get('CLAUDE_CODE'):
+        return 'claude'
+
+    # Check for Codex environment
+    if os.environ.get('CODEX_CLI'):
+        return 'codex'
+
+    # Check parent process name (optional - requires psutil)
+    try:
+        import psutil
+        parent = psutil.Process(os.getppid())
+        parent_name = parent.name().lower()
+
+        if 'claude' in parent_name:
+            return 'claude'
+        if 'codex' in parent_name:
+            return 'codex'
+    except (ImportError, Exception):
+        pass
+
+    # Default to unified (manual invocation)
+    return 'unified'
+
+
+def cmd_show(args):
+    """Show recent memories"""
+    limit = int(args[1]) if len(args) > 1 and args[1].isdigit() else 10
+    source = None
+
+    # Check for --claude or --codex flags
+    if '--claude' in args:
+        source = 'claude'
+    elif '--codex' in args:
+        source = 'codex'
+    elif '--all' in args:
+        limit = None
+
+    # Check for --manual or --auto
+    type_filter = None
+    if '--manual' in args:
+        type_filter = 'manual'
+    elif '--auto' in args:
+        type_filter = 'auto'
+
+    memories = common.read_memories(limit=limit, source=source)
+
+    # Apply type filter
+    if type_filter:
+        memories = [m for m in memories if m.get('type') == type_filter]
+
+    if not memories:
+        print("No memories found.")
+        return
+
+    print(f"\nRecent Memory ({len(memories)} entries):\n")
+
+    for entry in memories:
+        # Source icon
+        source_icon = {
+            'claude': '🔵',
+            'codex': '🟢',
+            'unified': '⚪'
+        }.get(entry.get('source'), '⚪')
+
+        # Type icon
+        type_icon = '✍️' if entry.get('type') == 'manual' else '🤖'
+
+        # Format date
+        date = entry.get('date', 'Unknown')
+
+        # Summary
+        summary = entry.get('summary', 'No summary')
+
+        # Display
+        print(f"{source_icon} {type_icon} {date}: {summary}")
+
+    print()
+
+
+def cmd_save(args):
+    """Save a manual memory entry"""
+    if len(args) < 2:
+        print("Usage: uni-mem save \"Summary\" [details_json]")
+        return
+
+    summary = args[1]
+    details = {}
+
+    # Parse details JSON if provided
+    if len(args) > 2:
+        try:
+            details = json.loads(args[2])
+        except json.JSONDecodeError:
+            print("Warning: Could not parse details JSON, ignoring")
+
+    # Detect source
+    source = detect_source()
+
+    # Check for explicit --source flag
+    if '--source' in args:
+        idx = args.index('--source')
+        if idx + 1 < len(args):
+            source = args[idx + 1]
+
+    # Check for --tags flag
+    tags = []
+    if '--tags' in args:
+        idx = args.index('--tags')
+        if idx + 1 < len(args):
+            tags = args[idx + 1].split(',')
+
+    # Create entry
+    entry = {
+        'source': source,
+        'type': 'manual',
+        'summary': summary,
+        'details': details,
+        'metadata': {}
+    }
+
+    if tags:
+        entry['metadata']['tags'] = tags
+
+    # Save
+    entry_id = common.append_to_unified_storage(entry)
+
+    print(f"✓ Memory saved (ID: {entry_id}, source: {source})")
+
+
+def cmd_search(args):
+    """Search memories"""
+    if len(args) < 2:
+        print("Usage: uni-mem search \"keyword\" [--claude|--codex] [--manual|--auto]")
+        return
+
+    query = args[1]
+    source = None
+
+    # Check for source filter
+    if '--claude' in args:
+        source = 'claude'
+    elif '--codex' in args:
+        source = 'codex'
+
+    # Check for type filter
+    type_filter = None
+    if '--manual' in args:
+        type_filter = 'manual'
+    elif '--auto' in args:
+        type_filter = 'auto'
+
+    results = common.search_memories(query, source=source)
+
+    # Apply type filter
+    if type_filter:
+        results = [r for r in results if r.get('type') == type_filter]
+
+    if not results:
+        print(f"No results found for: {query}")
+        return
+
+    print(f"\nSearch Results ({len(results)} matches):\n")
+
+    for entry in results:
+        source_icon = {
+            'claude': '🔵',
+            'codex': '🟢',
+            'unified': '⚪'
+        }.get(entry.get('source'), '⚪')
+
+        type_icon = '✍️' if entry.get('type') == 'manual' else '🤖'
+        date = entry.get('date', 'Unknown')
+        summary = entry.get('summary', 'No summary')
+
+        print(f"{source_icon} {type_icon} {date}: {summary}")
+
+    print()
+
+
+def cmd_stats(args):
+    """Show statistics"""
+    memories = common.read_memories()
+
+    if not memories:
+        print("No memories found.")
+        return
+
+    # Count by source
+    by_source = {}
+    by_type = {}
+    by_date = {}
+
+    for entry in memories:
+        source = entry.get('source', 'unknown')
+        type_ = entry.get('type', 'unknown')
+        date = entry.get('date', 'unknown')
+
+        by_source[source] = by_source.get(source, 0) + 1
+        by_type[type_] = by_type.get(type_, 0) + 1
+        by_date[date] = by_date.get(date, 0) + 1
+
+    print("\n" + "=" * 60)
+    print("Universal Memory Statistics")
+    print("=" * 60 + "\n")
+
+    print(f"Total Entries: {len(memories)}\n")
+
+    print("By Source:")
+    for source, count in sorted(by_source.items()):
+        icon = {'claude': '🔵', 'codex': '🟢', 'unified': '⚪'}.get(source, '⚪')
+        print(f"  {icon} {source}: {count}")
+
+    print("\nBy Type:")
+    for type_, count in sorted(by_type.items()):
+        icon = '✍️' if type_ == 'manual' else '🤖'
+        print(f"  {icon} {type_}: {count}")
+
+    print(f"\nDates: {len(by_date)} days with entries")
+    print(f"Most recent: {max(by_date.keys())}")
+    print(f"Oldest: {min(by_date.keys())}")
+
+    print()
+
+
+def cmd_status(args):
+    """Check system status"""
+    memory_file = Path.home() / ".universal-memory" / "memories.jsonl"
+    index_dir = Path.home() / ".universal-memory" / "index"
+
+    print("\n" + "=" * 60)
+    print("Universal Memory System Status")
+    print("=" * 60 + "\n")
+
+    # Check memory file
+    if memory_file.exists():
+        size = memory_file.stat().st_size
+        with open(memory_file, 'r') as f:
+            count = sum(1 for line in f if line.strip())
+        print(f"✓ Memory file: {memory_file}")
+        print(f"  Entries: {count}")
+        print(f"  Size: {size:,} bytes")
+    else:
+        print(f"✗ Memory file not found: {memory_file}")
+
+    # Check indexes
+    print("\nIndexes:")
+    for index_file in ['by-source.json', 'by-topic.json', 'by-date.json']:
+        path = index_dir / index_file
+        if path.exists():
+            print(f"  ✓ {index_file}")
+        else:
+            print(f"  ✗ {index_file}")
+
+    # Check analyzers
+    print("\nAnalyzers:")
+    analyzer_dir = Path.home() / ".universal-memory" / "analyzers"
+    for analyzer in ['claude-analyzer.py', 'codex-analyzer.py', 'common.py']:
+        path = analyzer_dir / analyzer
+        if path.exists():
+            print(f"  ✓ {analyzer}")
+        else:
+            print(f"  ✗ {analyzer}")
+
+    # Current context
+    print(f"\nCurrent context: {detect_source()}")
+
+    print()
+
+
+def cmd_topics(args):
+    """List topics"""
+    # Load topic index
+    index_file = Path.home() / ".universal-memory" / "index" / "by-topic.json"
+
+    if not index_file.exists():
+        print("No topic index found. Memories may not have been indexed yet.")
+        return
+
+    with open(index_file, 'r') as f:
+        topics = json.load(f)
+
+    if not topics:
+        print("No topics found.")
+        return
+
+    # If specific topic requested, show entries for that topic
+    if len(args) > 1:
+        topic = args[1]
+        if topic in topics:
+            entry_ids = topics[topic]
+            print(f"\nTopic: {topic} ({len(entry_ids)} entries)\n")
+
+            # Load and display entries
+            memories = common.read_memories()
+            for entry in memories:
+                if entry.get('id') in entry_ids:
+                    source_icon = {
+                        'claude': '🔵',
+                        'codex': '🟢'
+                    }.get(entry.get('source'), '⚪')
+                    print(f"{source_icon} {entry.get('date')}: {entry.get('summary')}")
+        else:
+            print(f"Topic not found: {topic}")
+        return
+
+    # List all topics with counts
+    sorted_topics = sorted(topics.items(), key=lambda x: len(x[1]), reverse=True)
+
+    print(f"\nTopics ({len(sorted_topics)} total):\n")
+
+    for topic, entry_ids in sorted_topics[:20]:  # Top 20
+        print(f"  {topic}: {len(entry_ids)}")
+
+    if len(sorted_topics) > 20:
+        print(f"\n  ... and {len(sorted_topics) - 20} more")
+
+    print()
+
+
+def show_help():
+    """Show help message"""
+    print("""
+Universal Memory CLI (uni-mem)
+Works from both Claude Code and Codex contexts
+
+USAGE:
+    uni-mem <command> [arguments]
+
+COMMANDS:
+    show [n]                Show last N entries (default 10)
+    show --all              Show all entries
+    show --claude           Show only Claude entries
+    show --codex            Show only Codex entries
+    show --manual           Show only manual entries
+    show --auto             Show only auto entries
+
+    save "Summary" [json]   Save a manual memory entry
+    save "..." --source X   Explicit source (claude/codex)
+    save "..." --tags "x,y" Add tags to entry
+
+    search "keyword"        Search all memories
+    search "..." --claude   Search Claude only
+    search "..." --codex    Search Codex only
+    search "..." --manual   Search manual entries only
+
+    stats                   Show overall statistics
+    stats --breakdown       Detailed breakdown
+
+    topics                  List all topics
+    topics "keyword"        Show entries for topic
+
+    status                  Check system health
+
+    help                    Show this help
+
+EXAMPLES:
+    uni-mem show 20
+    uni-mem save "Completed authentication feature" '{"project": "app"}'
+    uni-mem search "pharmacy" --claude
+    uni-mem stats
+    uni-mem topics authentication
+
+ICONS:
+    🔵 = Claude Code
+    🟢 = Codex CLI
+    ⚪ = Unified (manual)
+    ✍️ = Manual save
+    🤖 = Auto-extracted
+""")
+
+
+def main():
+    if len(sys.argv) < 2:
+        show_help()
+        return
+
+    cmd = sys.argv[1]
+    args = sys.argv[1:]
+
+    commands = {
+        'show': cmd_show,
+        'save': cmd_save,
+        'search': cmd_search,
+        'stats': cmd_stats,
+        'status': cmd_status,
+        'topics': cmd_topics,
+        'help': show_help,
+        '--help': show_help,
+        '-h': show_help
+    }
+
+    if cmd in commands:
+        commands[cmd](args)
+    else:
+        print(f"Unknown command: {cmd}")
+        print("Run 'uni-mem help' for usage")
+
+
+if __name__ == "__main__":
+    main()

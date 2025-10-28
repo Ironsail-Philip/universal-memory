@@ -1,0 +1,17 @@
+#!/bin/bash
+# Codex CLI Wrapper with Memory
+# Loads unified memory before starting Codex
+
+echo ""
+echo "🧠 Loading Universal AI Memory..."
+echo ""
+
+# Load recent memories
+python3 ~/.universal-memory/hooks/load-memory.py --limit 10
+
+echo ""
+echo "Starting Codex..."
+echo ""
+
+# Run codex with all arguments passed through
+codex "$@"
