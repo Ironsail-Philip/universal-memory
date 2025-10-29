@@ -1,13 +1,16 @@
 #!/bin/bash
 # Codex CLI Wrapper with Memory
 # Loads unified memory before starting Codex
+# Uses session-based tracking (not time-based suppression)
 
 OUTPUT=""
-if OUTPUT=$(python3 ~/.universal-memory/hooks/load-memory.py --limit 10 \
-    --dedupe-seconds 5 --dedupe-key codex); then
+if OUTPUT=$(python3 ~/.universal-memory/hooks/load-memory.py \
+    --source all \
+    --limit 20 \
+    --session-key codex 2>&1); then
     if [ -n "$OUTPUT" ]; then
         echo ""
-        echo "🧠 Loading Universal AI Memory..."
+        echo "🧠 Loading Universal AI Memory (RAG System)..."
         echo ""
         printf '%s\n' "$OUTPUT"
         echo ""

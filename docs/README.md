@@ -1,6 +1,8 @@
 # 🧠 Universal AI Memory
 
-**One unified memory system for all your AI coding assistants**
+**RAG-enabled unified memory system for AI coding assistants**
+
+**Version:** 3.0.0 | **Architecture:** Retrieval-Augmented Generation (RAG)
 
 Currently supports: **Claude Code** and **Codex CLI**
 
@@ -8,15 +10,33 @@ Currently supports: **Claude Code** and **Codex CLI**
 
 ## 🎯 What Is This?
 
-Universal AI Memory is a unified storage system that captures and indexes all your work across different AI coding assistants. Instead of separate memory systems that don't talk to each other, everything goes into **one place**.
+Universal AI Memory is a **RAG-based memory system** that enables AI coding assistants to remember and build on previous work. Instead of starting fresh each session, AI models can:
+- Retrieve context from past work (Short-Term Memory)
+- Query historical knowledge on-demand (Long-Term Memory)
+- Reference specific past decisions by ID
+- Build continuity across sessions and AI systems
 
 **Key Benefits:**
 - 🔵 **See what you did in Claude** when working in Codex
 - 🟢 **See what you did in Codex** when working in Claude
+- 🧠 **AI models actively use memory** - they check before building
 - 🔍 **Search everything** from one interface
 - 📊 **Track all your work** across all AI systems
 - ⚡ **Automatic extraction** - zero manual effort
-- 🧼 **Clean startup banners** - deduped session output
+- ✅ **Memory shown once per session** - guaranteed infusion
+
+---
+
+## 📖 Documentation
+
+| Read This For... | Document |
+|------------------|----------|
+| **Overview & concepts** | [RAG-SYSTEM-OVERVIEW.md](RAG-SYSTEM-OVERVIEW.md) |
+| **Commands & usage** | This file (README.md) |
+| **Technical architecture** | [RAG-ARCHITECTURE.md](RAG-ARCHITECTURE.md) |
+| **How AI models use it** | [LLM-MEMORY-INSTRUCTIONS.md](LLM-MEMORY-INSTRUCTIONS.md) |
+| **What's new in v3.0** | [CHANGES-v3.0.md](CHANGES-v3.0.md) |
+| **All documentation** | [DOCUMENTATION.md](DOCUMENTATION.md) |
 
 ---
 
@@ -105,9 +125,22 @@ uni-mem status
 
 ## 🏗️ How It Works
 
-### Architecture
+### RAG Architecture (v3.0)
 
 ```
+                   TWO-TIER MEMORY SYSTEM
+                ┌─────────────────────────┐
+                │  SHORT-TERM MEMORY (STM)│
+                │  Last 20 memories       │
+                │  Shown at session start │
+                └───────────┬─────────────┘
+                            │
+                ┌───────────┴─────────────┐
+                │  LONG-TERM MEMORY (LTM) │
+                │  All 164+ memories      │
+                │  Searchable via uni-mem │
+                └───────────┬─────────────┘
+                            │
                    ONE UNIFIED STORAGE
                 ~/.universal-memory/
                         ↑↑
@@ -121,6 +154,20 @@ uni-mem status
             │                        │
             └──→ unified storage ────┘
 ```
+
+### Memory Tiers
+
+**Short-Term Memory (STM):**
+- Last 20 memories across all AI systems
+- Displayed automatically at session start
+- Provides immediate context
+- Includes memory IDs for reference
+
+**Long-Term Memory (LTM):**
+- All 164+ historical memories
+- Searchable via `uni-mem` commands
+- Retrieved on-demand by AI models
+- Indexed by topic, date, source
 
 ### Automatic Extraction
 

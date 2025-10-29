@@ -1,27 +1,46 @@
 # 🧠 Universal AI Memory
 
-**One unified memory system for all your AI coding assistants**
+**RAG-enabled unified memory system for AI coding assistants**
 
-Never lose context when switching between Claude Code and Codex CLI. Everything captured, everything searchable, everything automatic.
+**Version:** 3.0.0 | **Architecture:** Retrieval-Augmented Generation (RAG)
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Platform: macOS | Linux](https://img.shields.io/badge/platform-macOS%20%7C%20Linux-lightgrey)]()
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Version](https://img.shields.io/badge/version-3.0.0-green.svg)](https://github.com/Ironsail-Philip/universal-memory/releases)
 
 ---
 
 ## 🎯 What Is This?
 
-Universal AI Memory captures and indexes **all your work** across different AI coding assistants into **one unified storage**. No more forgetting what you did in Claude when working in Codex, or vice versa.
+Universal AI Memory is a **RAG-based memory system** that enables AI coding assistants to remember and build on previous work. Instead of starting fresh each session, AI models can:
 
-### Key Features
+- 🧠 **Retrieve context from past work** (Short-Term Memory)
+- 🔍 **Query historical knowledge on-demand** (Long-Term Memory)
+- 🔗 **Reference specific past decisions by ID**
+- 🔄 **Build continuity across sessions and AI systems**
 
-- 🔵 **See Claude Code work** when using Codex CLI
-- 🟢 **See Codex CLI work** when using Claude Code
-- 🔍 **Search everything** from one interface
-- 📊 **Track all your work** across all AI systems
-- ⚡ **Automatic extraction** - zero manual effort
-- 🧼 **Smart session dedupe** - clean banner once per launch
-- 🔒 **100% local** - your data never leaves your machine
+Currently supports: **Claude Code** and **Codex CLI**
+
+---
+
+## ✨ Key Features
+
+### For Users
+- ✅ **Cross-system memory** - See work from all AI tools in one place
+- ✅ **Automatic extraction** - Zero manual effort, just work normally
+- ✅ **Fast search** - Find anything in <100ms
+- ✅ **Never lose context** - Work continues seamlessly across sessions
+
+### For AI Models
+- ✅ **RAG-aware** - AI actively uses memory, not just passive storage
+- ✅ **STM/LTM separation** - Working memory + deep historical knowledge
+- ✅ **Memory IDs** - Reference specific past work: `[mem:abc123]`
+- ✅ **Instructed behavior** - AI knows when and how to query memory
+
+### Technical
+- ✅ **100% local** - All data stays on your machine
+- ✅ **File locking** - Safe concurrent writes
+- ✅ **Indexed retrieval** - Topic, date, source indexes
+- ✅ **Hourly extraction** - Automatic background processing
 
 ---
 
@@ -34,349 +53,255 @@ Universal AI Memory captures and indexes **all your work** across different AI c
 git clone https://github.com/Ironsail-Philip/universal-memory.git
 cd universal-memory
 
-# Run one-command installer
+# Run the installer
 ./install.sh
 ```
 
-That's it! The installer automatically:
-- ✅ Installs to `~/.universal-memory/`
-- ✅ Configures Claude Code hooks
-- ✅ Sets up hourly extraction
-- ✅ Adds CLI aliases
-- ✅ Initializes storage
+The installer will:
+- Copy files to `~/.universal-memory/`
+- Set up analyzers for Claude Code and Codex CLI
+- Configure LaunchAgents for automatic extraction
+- Set up session hooks for memory infusion
 
-### First Commands
+### Usage
 
-```bash
-# View recent work from all AI systems
-uni-mem show
+Once installed, memory works automatically!
 
-# Search everything
-uni-mem search "keyword"
-
-# See statistics
-uni-mem stats
-
-# Start Codex with memory loaded
-codex-mem
+**At session start**, you'll see recent memories:
 ```
+════════════════════════════════════════════════════════════════
+📚 SHORT-TERM MEMORY (STM) - Recent Context
+   20 entries across all AI systems
+════════════════════════════════════════════════════════════════
 
----
-
-## 💡 How It Works
-
-### Architecture
-
-```
-                ONE UNIFIED STORAGE
-             ~/.universal-memory/
-                     ↑↑
-                     ││
-         ┌───────────┘└───────────┐
-         │                        │
-   Claude Code                Codex CLI
-  (auto-extract)           (auto-extract)
-         │                        │
-   Hourly analyzer          Hourly analyzer
-         │                        │
-         └──→ unified storage ────┘
-```
-
-### Automatic Extraction
-
-- **LaunchAgents** (macOS) or **cron jobs** (Linux) run hourly
-- Conversations automatically captured from both AI systems
-- Indexed by source, topic, date
-- Available instantly via CLI
-
-### Session Integration
-
-**Claude Code:**
-- Memories auto-load at startup
-- Installer now configures the SessionStart hook automatically
-- Smart dedupe ensures the banner shows once even on rapid relaunches
-
-**Codex CLI:**
-- Use `codex-mem` wrapper (deduped so you see the banner once per start)
-- Or check manually with `uni-mem show`
-
----
-
-## 📊 Example Output
-
-```bash
-$ uni-mem show
-
-Recent Memory (10 entries):
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-🔵 🤖 2025-10-28: Implemented authentication system
-🟢 🤖 2025-10-28: Reviewed API endpoints
-⚪ ✍️ 2025-10-28: Important architecture decision
-🔵 🤖 2025-10-27: Fixed database migration bug
-🟢 🤖 2025-10-27: Added unit tests
+🔵 🤖 2025-10-29: Working on RAG architecture [mem:abc123]
+🟢 🤖 2025-10-29: Fixed initialization bug [mem:def456]
 ...
+
+💡 I can search LONG-TERM MEMORY (164+ entries) with:
+   • uni-mem search "<keyword>"
+   • uni-mem topics "<topic>"
+   • uni-mem show --claude
 ```
 
-### Icons
-- 🔵 Claude Code | 🟢 Codex CLI | ⚪ Manual
-- 🤖 Auto-extracted | ✍️ Manually saved
-
----
-
-## 🎨 Features
-
-### CLI Commands
-
+**Search your memory:**
 ```bash
+# Find past work
+uni-mem search "authentication"
+
 # Show recent memories
-uni-mem show              # Last 10 entries
-uni-mem show 20           # Last 20 entries
-uni-mem show --claude     # Only Claude memories
-uni-mem show --codex      # Only Codex memories
+uni-mem show 10
 
-# Search
-uni-mem search "keyword"
-uni-mem search "bug fix" --claude
+# See only Claude Code work
+uni-mem show --claude
 
-# Save manually
-uni-mem save "Important decision made"
+# List all topics
+uni-mem topics
 
-# Topics
-uni-mem topics                    # List all topics
-uni-mem topics "authentication"   # Show entries for topic
-
-# Statistics
-uni-mem stats             # Overall stats
-uni-mem status            # System health check
+# View statistics
+uni-mem stats
 ```
-
-### Automatic Features
-
-- ⏰ **Hourly extraction** - New work captured automatically
-- 📊 **Real-time indexing** - Instant search
-- 🔄 **Cross-system context** - See all your work in one place
-- 💾 **Safe concurrent writes** - File locking prevents corruption
-
----
-
-## 📁 What Gets Installed
-
-### Application Files (`~/.universal-memory/`)
-```
-analyzers/          # Conversation extractors
-hooks/              # Session startup scripts
-uni-mem             # Main CLI
-codex-with-memory   # Codex wrapper
-scripts/            # Helper utilities (Claude hook configurator, etc.)
-```
-
-### User Data (created but initially empty)
-```
-memories.jsonl      # Your memories (JSONL format)
-logs/               # Runtime logs
-sessions/           # Processing state
-index/              # Search indexes
-```
-
-**Your data stays 100% local. Nothing is ever uploaded.**
-
----
-
-## 🔧 Requirements
-
-### Supported Platforms
-- ✅ macOS (10.15+)
-- ✅ Linux (Ubuntu, Debian, Fedora, etc.)
-- ❌ Windows (not yet supported)
-
-### Required Software
-- Python 3 (3.7+)
-- Claude Code or Codex CLI
-
-### Optional
-- Git (for easy updates)
 
 ---
 
 ## 📖 Documentation
 
-- **[INSTALL.md](INSTALL.md)** - Detailed installation guide
-- **[docs/README.md](docs/README.md)** - User guide and features
-- **[docs/UNIFIED-ARCHITECTURE.md](docs/UNIFIED-ARCHITECTURE.md)** - Technical architecture
-- **[docs/CODEX-INTEGRATION.md](docs/CODEX-INTEGRATION.md)** - Codex-specific info
+Comprehensive documentation is included:
+
+| Document | Purpose |
+|----------|---------|
+| **[DOCUMENTATION.md](docs/DOCUMENTATION.md)** | Master navigation index |
+| **[README.md](docs/README.md)** | User guide with commands |
+| **[RAG-SYSTEM-OVERVIEW.md](docs/RAG-SYSTEM-OVERVIEW.md)** | System concepts and architecture |
+| **[RAG-ARCHITECTURE.md](docs/RAG-ARCHITECTURE.md)** | Technical specification |
+| **[LLM-MEMORY-INSTRUCTIONS.md](docs/LLM-MEMORY-INSTRUCTIONS.md)** | How AI models use memory |
+| **[CHANGES-v3.0.md](docs/CHANGES-v3.0.md)** | What's new in v3.0 |
 
 ---
 
-## 🔄 Updating
+## 🏗️ How It Works
 
-```bash
-cd universal-memory
-git pull
-./update.sh
+### RAG Architecture
+
+```
+                   TWO-TIER MEMORY SYSTEM
+                ┌─────────────────────────┐
+                │  SHORT-TERM MEMORY (STM)│
+                │  Last 20 memories       │
+                │  Shown at session start │
+                └───────────┬─────────────┘
+                            │
+                ┌───────────┴─────────────┐
+                │  LONG-TERM MEMORY (LTM) │
+                │  All historical memories│
+                │  Searchable via uni-mem │
+                └───────────┬─────────────┘
+                            │
+                   ONE UNIFIED STORAGE
+                ~/.universal-memory/
+                        ↑↑
+                        ││
+            ┌───────────┘└───────────┐
+            │                        │
+    Claude Code                  Codex CLI
+   (auto-extract)            (auto-extract)
+            │                        │
+    Hourly analyzer           Hourly analyzer
 ```
 
-Your memories and configuration are preserved during updates.
+### Memory Tiers
+
+**Short-Term Memory (STM):**
+- Last 20 memories across all AI systems
+- Automatically shown at session start
+- Provides immediate context
+- Includes memory IDs for reference
+
+**Long-Term Memory (LTM):**
+- All historical memories (searchable)
+- Retrieved on-demand by AI models
+- Indexed by topic, date, source
+- Fast search (<100ms)
 
 ---
 
-## 🗑️ Uninstalling
+## 💻 System Requirements
 
-```bash
-cd universal-memory
-./uninstall.sh
-```
-
-The uninstaller offers to backup your memories before removal.
+- **macOS** (tested) or **Linux** (compatible)
+- **Python 3.6+**
+- **Claude Code** and/or **Codex CLI**
+- ~500KB disk space
 
 ---
 
-## 🛠️ Development
+## 🔧 Configuration
 
-### Project Structure
+The system works out of the box with sensible defaults. Advanced users can configure:
 
+- **LaunchAgent frequency** (default: hourly)
+- **STM size** (default: 20 entries)
+- **Session hook behavior**
+
+See [RAG-ARCHITECTURE.md](docs/RAG-ARCHITECTURE.md) for details.
+
+---
+
+## 📊 Example Output
+
+### Session Start
 ```
-universal-memory/
-├── install.sh              # One-command installer
-├── update.sh               # Update script
-├── uninstall.sh            # Uninstaller
-├── src/                    # Application source
-│   ├── analyzers/         # Conversation extractors
-│   ├── hooks/             # Session integration
-│   ├── cli/               # CLI tool
-│   └── config/            # Configuration files
-├── scripts/               # Helper scripts
-└── docs/                  # Documentation
+════════════════════════════════════════════════════════════════
+📚 SHORT-TERM MEMORY (STM) - Recent Context
+   20 entries across all AI systems
+════════════════════════════════════════════════════════════════
+
+🔵 🤖 2025-10-29: Working on authentication [mem:a8380efc]
+🟢 🤖 2025-10-29: Fixed database bug [mem:6250c57e]
+🔵 ✍️ 2025-10-28: Decided on PostgreSQL [mem:304b1b0b]
+...
 ```
 
-### Running Tests
+### Search Results
+```bash
+$ uni-mem search "authentication"
+
+Found 3 memories:
+🔵 🤖 2025-10-15: Implemented OAuth with JWT [mem:abc123]
+🔵 ✍️ 2025-10-10: Decided on auth strategy [mem:def456]
+🔵 🤖 2025-10-08: Set up user database [mem:ghi789]
+```
+
+### Statistics
+```bash
+$ uni-mem stats
+
+Total Entries: 164
+By Source:
+  🔵 claude: 140
+  🟢 codex: 10
+  ⚪ unified: 14
+
+By Type:
+  🤖 auto: 136
+  ✍️ manual: 28
+```
+
+---
+
+## 🛠️ Troubleshooting
+
+### Memory not showing at session start?
 
 ```bash
-# Test CLI
-~/.universal-memory/uni-mem stats
+# Check hook configuration
+cat ~/.claude/settings.json | grep hooks
 
-# Test analyzers manually
-python3 ~/.universal-memory/analyzers/claude-analyzer.py
-python3 ~/.universal-memory/analyzers/codex-analyzer.py
+# Test manually
+~/.universal-memory/hooks/claude-session-start.sh
+```
+
+### Memories not being extracted?
+
+```bash
+# Check LaunchAgents
+launchctl list | grep universal
 
 # Check logs
-tail -f ~/.universal-memory/logs/claude-analyzer.log
+tail -50 ~/.universal-memory/logs/claude-analyzer.log
+```
+
+### Search not working?
+
+```bash
+# Rebuild indexes
+uni-mem reindex
+
+# Verify data
+cat ~/.universal-memory/memories.jsonl | wc -l
 ```
 
 ---
 
-## 🌟 Key Achievements
-
-- ✅ **Unified Storage** - Single source of truth for all AI work
-- ✅ **Zero-Effort Operation** - Automatic extraction and indexing
-- ✅ **Cross-System Context** - See work from all AI systems
-- ✅ **Fast & Efficient** - Sub-100ms searches
-- ✅ **Extensible Design** - Easy to add new AI systems
-
----
-
-## 🚧 Roadmap
-
-### Phase 2: Associations (Planned)
-- Link related memories across systems
-- Knowledge graph connections
-
-### Phase 3: Advanced Features (Planned)
-- Semantic search with embeddings
-- AI-powered summaries
-- Importance scoring
-
-### Phase 4: Distribution (In Progress)
-- ✅ GitHub distribution
-- ✅ One-command installer
-- 🔄 Homebrew package
-- 🔄 npm package
-
----
-
-## 🤝 Contributing
-
-Contributions welcome! This project is built to help developers maintain context across AI coding assistants.
-
-### Areas for Contribution
-- Windows support
-- Additional AI system integrations (GitHub Copilot, Cursor, etc.)
-- Semantic search features
-- UI/visualization tools
-
----
-
-## 📝 Technical Highlights
-
-### Storage Format
-- **JSONL** (newline-delimited JSON) for efficient append operations
-- **File locking** (fcntl.flock) for safe concurrent writes
-- **Pre-computed indexes** for fast searches
-
-### Memory Entry Schema
-```json
-{
-  "id": "uuid-v4",
-  "timestamp": "2025-10-28T10:00:00.123456",
-  "date": "2025-10-28",
-  "source": "claude|codex|unified",
-  "type": "manual|auto",
-  "summary": "One sentence description",
-  "details": {
-    "topics": ["topic1", "topic2"],
-    "files_modified": ["file.ts"],
-    "message_count": 25
-  }
-}
-```
-
-### Performance
-- **Search:** <100ms for 1000+ entries
-- **Storage:** ~300KB per 1000 entries
-- **Memory Usage:** <50MB
-
----
-
-## 🙏 Credits
-
-Built with Claude Code in a meta moment - creating a memory system while the system captured its own creation!
-
----
-
-## 📄 License
+## 📝 License
 
 MIT License - See [LICENSE](LICENSE) for details.
 
 ---
 
-## 🆘 Support
+## 🙏 Credits
 
-- **Issues:** [GitHub Issues](https://github.com/Ironsail-Philip/universal-memory/issues)
-- **Documentation:** See `docs/` directory
-- **Status Check:** Run `uni-mem status`
+Built with Claude Code in a meta moment - this memory system captured its own creation!
 
 ---
 
-## 🎉 Success Stories
+## 🔗 Links
 
-With Universal Memory, you can:
-
-1. **Continue work seamlessly** - Start in Claude, finish in Codex
-2. **Never lose context** - All work captured automatically
-3. **Find anything instantly** - Full-text search across everything
-4. **See the big picture** - Timeline view of all work
-5. **Track your progress** - Comprehensive statistics
+- **Repository:** https://github.com/Ironsail-Philip/universal-memory
+- **Issues:** https://github.com/Ironsail-Philip/universal-memory/issues
+- **Releases:** https://github.com/Ironsail-Philip/universal-memory/releases
 
 ---
 
-**Happy coding with perfect memory!** 🧠✨
+## 🎯 What's New in v3.0
+
+### Major Changes
+- ✅ **RAG Architecture** - True retrieval-augmented generation
+- ✅ **STM/LTM Separation** - Working memory + deep storage
+- ✅ **Session-based Tracking** - Guaranteed memory infusion (not time-suppressed)
+- ✅ **LLM Instructions** - AI models know how to use memory
+- ✅ **Memory IDs** - Reference specific past work
+- ✅ **Comprehensive Docs** - 3,500+ lines of documentation
+
+See [CHANGES-v3.0.md](docs/CHANGES-v3.0.md) for complete changelog.
 
 ---
 
-## Star History
+## 🚀 Quick Links
 
-If you find this project helpful, please consider giving it a star ⭐
+- **Install:** `git clone ... && cd ... && ./install.sh`
+- **Use:** `uni-mem stats` and `uni-mem search "<keyword>"`
+- **Docs:** `cat ~/.universal-memory/DOCUMENTATION.md`
 
 ---
 
-**Questions? Check out the [documentation](docs/) or open an [issue](https://github.com/Ironsail-Philip/universal-memory/issues)!**
+**Universal AI Memory v3.0 - Never lose context again!**

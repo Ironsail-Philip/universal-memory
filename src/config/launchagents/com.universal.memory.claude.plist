@@ -8,17 +8,17 @@
     <key>ProgramArguments</key>
     <array>
         <string>/usr/bin/python3</string>
-        <string>$HOME/.universal-memory/analyzers/claude-analyzer.py</string>
+        <string>/Users/philipdagostino/.universal-memory/analyzers/claude-analyzer.py</string>
     </array>
 
     <key>StartInterval</key>
     <integer>3600</integer>
 
     <key>StandardOutPath</key>
-    <string>$HOME/.universal-memory/logs/launchd-claude-stdout.log</string>
+    <string>/Users/philipdagostino/.universal-memory/logs/launchd-claude-stdout.log</string>
 
     <key>StandardErrorPath</key>
-    <string>$HOME/.universal-memory/logs/launchd-claude-stderr.log</string>
+    <string>/Users/philipdagostino/.universal-memory/logs/launchd-claude-stderr.log</string>
 
     <key>RunAtLoad</key>
     <true/>
