@@ -44,37 +44,29 @@ git push -u origin main
 On GitHub:
 1. Go to: https://github.com/Ironsail-Philip/universal-memory/releases
 2. Click: "Create a new release"
-3. **Tag:** `v1.0.0`
-4. **Title:** `Universal AI Memory v1.0.0`
-5. **Description:** Copy from `docs/PROJECT-SUMMARY.md` or use:
+3. **Tag:** `v1.0.2`
+4. **Title:** `Universal AI Memory v1.0.2`
+5. **Description:** Copy from `RELEASE-NOTES-v1.0.2.md` or use:
 
 ```markdown
-## Universal AI Memory v1.0.0
+## Universal AI Memory v1.0.2
 
-One unified memory system for AI coding assistants (Claude Code & Codex CLI)
+Cleaner session banners + automated Claude hook configuration
 
-### Features
-- ✅ Unified storage for all AI work
-- ✅ Automatic hourly extraction
-- ✅ Fast CLI with search (<100ms)
-- ✅ Cross-system visibility
-- ✅ One-command installer
-- ✅ 100% local storage
+### Highlights
+- ✅ Smart dedupe guard keeps startup output clean
+- ✅ Installer auto-configures Claude SessionStart hooks (with backups)
+- ✅ Codex wrapper prints the banner once, then launches the real `codex`
+- ✅ Documentation refreshed across README, docs, and status reports
 
-### Installation
+### Upgrade
 ```bash
-git clone https://github.com/Ironsail-Philip/universal-memory.git
-cd universal-memory
-./install.sh
+git pull
+./update.sh
+source ~/.zshrc
 ```
 
-See [INSTALL.md](INSTALL.md) for details.
-
-### Platform Support
-- macOS (fully tested)
-- Linux (supported)
-
-Built with Claude Code!
+See [RELEASE-NOTES-v1.0.2.md](RELEASE-NOTES-v1.0.2.md) for details.
 ```
 
 6. Click: "Publish release"

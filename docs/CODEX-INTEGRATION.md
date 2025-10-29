@@ -28,8 +28,8 @@ alias codex-mem="~/.universal-memory/codex-with-memory"
 ```
 
 This will:
-1. Display recent memories from all AI systems
-2. Then start Codex normally
+1. Display recent memories from all AI systems (deduped so it prints once per start)
+2. Then start Codex normally using the real `codex` binary
 
 ### Option 2: Manual Check Before Starting
 
@@ -67,7 +67,7 @@ tail -f ~/.universal-memory/logs/codex-analyzer.log
 
 ## Future Enhancement
 
-When Codex adds support for startup hooks or configuration scripts, we can integrate memory loading natively like we did with Claude Code.
+When Codex adds support for startup hooks or configuration scripts, we can integrate memory loading natively like we did with Claude Code. Until then, the wrapper plus dedupe logic gives a consistent “single banner per launch” experience.
 
 ## Recommended Alias
 
@@ -85,3 +85,4 @@ Then you can use:
 - `codex-mem` - Start Codex with memory loaded
 - `codex` - Start Codex normally (memory still extracted hourly)
 - `uni-mem` - Access unified memory anytime
+- If you launch Codex repeatedly in quick succession, the wrapper's dedupe window suppresses duplicate banners to keep startup output clean.

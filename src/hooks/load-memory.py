@@ -7,6 +7,7 @@ Works for both Claude Code and Codex
 
 import sys
 import argparse
+import time
 from pathlib import Path
 
 # Add analyzers to path for imports
@@ -66,6 +67,34 @@ def format_memory_display(entries, show_details=False):
     return "\n".join(lines)
 
 
+def should_display(dedupe_seconds=0, dedupe_key="global"):
+    """Determine if we should display memory output (prevents rapid duplicates)."""
+    if dedupe_seconds <= 0:
+        return True
+
+    sentinel_dir = Path.home() / ".universal-memory" / "runtime"
+    sentinel_file = sentinel_dir / f"memory-display-{dedupe_key}.ts"
+    now = time.time()
+
+    try:
+        if sentinel_file.exists():
+            ts = float(sentinel_file.read_text().strip() or "0")
+            if now - ts < dedupe_seconds:
+                return False
+    except (ValueError, OSError):
+        # Ignore malformed sentinel and continue.
+        pass
+
+    try:
+        sentinel_dir.mkdir(parents=True, exist_ok=True)
+        sentinel_file.write_text(str(now))
+    except OSError:
+        # If we cannot write the sentinel, proceed without deduping.
+        pass
+
+    return True
+
+
 def load_memory(source='all', limit=15, show_details=False):
     """
     Load and display recent memories
@@ -103,10 +132,15 @@ def main():
                         help='Number of entries to show')
     parser.add_argument('--details', action='store_true',
                         help='Show additional details')
+    parser.add_argument('--dedupe-seconds', type=int, default=0,
+                        help='Skip display if recently shown within this window')
+    parser.add_argument('--dedupe-key', default='global',
+                        help='Unique key for dedupe tracking')
 
     args = parser.parse_args()
 
-    load_memory(source=args.source, limit=args.limit, show_details=args.details)
+    if should_display(args.dedupe_seconds, args.dedupe_key):
+        load_memory(source=args.source, limit=args.limit, show_details=args.details)
 
 
 if __name__ == "__main__":

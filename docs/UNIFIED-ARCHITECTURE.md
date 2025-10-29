@@ -438,47 +438,66 @@ def append_to_unified_storage(entry):
 
 ### Claude Code Hook
 
-**Location:** `~/.claude/hooks/on-session-start.sh` (if supported) or equivalent
+- **Location:** Configured automatically in `~/.claude/settings.local.json` (or `settings.json`)
+- **Installer helper:** `scripts/configure-claude-hook.py`
 
 ```bash
 #!/bin/bash
-# Load unified memory at Claude Code startup
+# ~/.universal-memory/hooks/claude-session-start.sh
+# Loads memory once per startup thanks to dedupe window
 
-echo "Loading Universal AI Memory..."
-python3 ~/.universal-memory/hooks/load-memory.py --source all --limit 15
+python3 ~/.universal-memory/hooks/load-memory.py --source all --limit 12 \
+  --dedupe-seconds 5 --dedupe-key claude
 ```
 
-### Codex Hook
+### Codex Wrapper
 
-**Location:** Codex config or startup script
+- **Binary:** `~/.universal-memory/codex-with-memory`
+- **Usage:** Wrapper around the real `codex` CLI
 
 ```bash
 #!/bin/bash
-# Load unified memory at Codex startup
+# ~/.universal-memory/codex-with-memory
+# Displays unified memory banner, then delegates to codex
 
-echo "Loading Universal AI Memory..."
-python3 ~/.universal-memory/hooks/load-memory.py --source all --limit 15
+if OUTPUT=$(python3 ~/.universal-memory/hooks/load-memory.py --limit 10 \
+    --dedupe-seconds 5 --dedupe-key codex); then
+    if [ -n "$OUTPUT" ]; then
+        printf '\n🧠 Loading Universal AI Memory...\n\n'
+        printf '%s\n\n' "$OUTPUT"
+    fi
+fi
+
+printf '\nStarting Codex...\n\n'
+command codex "$@"
 ```
 
 ### Memory Loader (`hooks/load-memory.py`)
 
 ```python
-"""Load and display recent memories at session start"""
+def should_display(dedupe_seconds=0, dedupe_key="global"):
+    """Skip output when the same hook runs twice in quick succession."""
+    sentinel_file = runtime_dir / f"memory-display-{dedupe_key}.ts"
+    # Read previous timestamp; suppress output if within window.
+    ...
 
-def load_memory(source='all', limit=15):
-    """
-    Load recent memories
-    source: 'all', 'claude', or 'codex'
-    limit: number of entries
-    """
 
-    entries = read_recent_entries(limit)
-
+def load_memory(source='all', limit=15, show_details=False):
+    entries = common.read_memories(limit=limit if source == 'all' else None)
     if source != 'all':
-        entries = [e for e in entries if e['source'] == source]
+        entries = [e for e in entries if e.get('source') == source][:limit]
+    print(format_memory_display(entries, show_details=show_details))
 
-    display_memory_summary(entries)
+
+if __name__ == "__main__":
+    args = parser.parse_args()
+    if should_display(args.dedupe_seconds, args.dedupe_key):
+        load_memory(...)
 ```
+
+- **Dedupe window:** Prevents double banners when a CLI restarts rapidly.
+- **Runtime sentinel:** Stored in `~/.universal-memory/runtime/`.
+- **Shared usage:** Both the Claude hook and Codex wrapper pass their own keys.
 
 ---
 

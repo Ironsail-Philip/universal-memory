@@ -20,6 +20,7 @@ Universal AI Memory captures and indexes **all your work** across different AI c
 - 🔍 **Search everything** from one interface
 - 📊 **Track all your work** across all AI systems
 - ⚡ **Automatic extraction** - zero manual effort
+- 🧼 **Smart session dedupe** - clean banner once per launch
 - 🔒 **100% local** - your data never leaves your machine
 
 ---
@@ -92,10 +93,11 @@ codex-mem
 
 **Claude Code:**
 - Memories auto-load at startup
-- See context from both AI systems
+- Installer now configures the SessionStart hook automatically
+- Smart dedupe ensures the banner shows once even on rapid relaunches
 
 **Codex CLI:**
-- Use `codex-mem` wrapper
+- Use `codex-mem` wrapper (deduped so you see the banner once per start)
 - Or check manually with `uni-mem show`
 
 ---
@@ -166,6 +168,7 @@ analyzers/          # Conversation extractors
 hooks/              # Session startup scripts
 uni-mem             # Main CLI
 codex-with-memory   # Codex wrapper
+scripts/            # Helper utilities (Claude hook configurator, etc.)
 ```
 
 ### User Data (created but initially empty)

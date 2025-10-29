@@ -16,6 +16,7 @@ Universal AI Memory is a unified storage system that captures and indexes all yo
 - 🔍 **Search everything** from one interface
 - 📊 **Track all your work** across all AI systems
 - ⚡ **Automatic extraction** - zero manual effort
+- 🧼 **Clean startup banners** - deduped session output
 
 ---
 
@@ -146,6 +147,9 @@ When you start a **Claude Code** session, recent memories are automatically load
 
 This gives you instant context from **all your AI work**, not just Claude!
 
+- Startup dedupe ensures repeated launches within a few seconds do not show duplicate banners.
+- The Codex wrapper shares the same dedupe so you see a single memory banner per CLI start.
+
 ---
 
 ## 📁 Directory Structure
@@ -162,6 +166,9 @@ This gives you instant context from **all your AI work**, not just Claude!
 │   ├── claude-session-start.sh
 │   ├── load-memory.py
 │   └── (codex hooks - future)
+├── scripts/
+│   ├── codex-with-memory        # Wrapper with dedupe + passthrough
+│   └── configure-claude-hook.py # Auto-configure Claude SessionStart hook
 ├── index/
 │   ├── by-source.json         # Fast lookups
 │   ├── by-topic.json

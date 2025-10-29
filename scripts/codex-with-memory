@@ -2,16 +2,25 @@
 # Codex CLI Wrapper with Memory
 # Loads unified memory before starting Codex
 
-echo ""
-echo "🧠 Loading Universal AI Memory..."
-echo ""
-
-# Load recent memories
-python3 ~/.universal-memory/hooks/load-memory.py --limit 10
+OUTPUT=""
+if OUTPUT=$(python3 ~/.universal-memory/hooks/load-memory.py --limit 10 \
+    --dedupe-seconds 5 --dedupe-key codex); then
+    if [ -n "$OUTPUT" ]; then
+        echo ""
+        echo "🧠 Loading Universal AI Memory..."
+        echo ""
+        printf '%s\n' "$OUTPUT"
+        echo ""
+    fi
+else
+    echo ""
+    echo "⚠️  Universal Memory failed to load."
+    echo ""
+fi
 
 echo ""
 echo "Starting Codex..."
 echo ""
 
-# Run codex with all arguments passed through
-codex "$@"
+# Run codex with all arguments passed through, bypassing aliases
+command codex "$@"

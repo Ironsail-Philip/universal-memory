@@ -37,6 +37,7 @@ universal-memory/
 │
 ├── scripts/               # Helper utilities
 │   ├── codex-with-memory        # Codex wrapper
+│   ├── configure-claude-hook.py # Claude settings updater
 │   └── migrate-old-memories.py  # Migration tool
 │
 └── docs/                  # User documentation

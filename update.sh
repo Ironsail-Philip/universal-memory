@@ -84,6 +84,24 @@ chmod +x "$INSTALL_DIR/hooks/"*.py
 chmod +x "$INSTALL_DIR/migrate-old-memories.py"
 echo -e "   ${GREEN}✓${NC} Permissions set"
 
+# Refresh Claude hook configuration
+CLAUDE_SETTINGS=""
+if [ -f "$HOME/.claude/settings.local.json" ]; then
+    CLAUDE_SETTINGS="$HOME/.claude/settings.local.json"
+elif [ -f "$HOME/.claude/settings.json" ]; then
+    CLAUDE_SETTINGS="$HOME/.claude/settings.json"
+fi
+
+if [ -n "$CLAUDE_SETTINGS" ]; then
+    echo "   Ensuring Claude Code SessionStart hook is configured..."
+    if python3 "$REPO_DIR/scripts/configure-claude-hook.py" \
+        "$CLAUDE_SETTINGS" "$INSTALL_DIR/hooks/claude-session-start.sh"; then
+        echo -e "   ${GREEN}✓${NC} Claude Code hook verified"
+    else
+        echo -e "   ${YELLOW}⚠️  Unable to update Claude Code hook automatically.${NC}"
+    fi
+fi
+
 # Detect OS for LaunchAgent updates
 OS="unknown"
 if [[ "$OSTYPE" == "darwin"* ]]; then

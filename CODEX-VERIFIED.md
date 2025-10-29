@@ -109,9 +109,9 @@ $ uni-mem show --codex
 **Size:** 333 bytes
 
 **Function:**
-1. Displays unified memory banner
-2. Loads last 10 memories from all sources
-3. Launches `codex` with all arguments
+1. Calls the shared loader with a 5-second dedupe guard
+2. Prints the unified memory banner + entries when not suppressed
+3. Launches the real `codex` binary (via `command codex`)
 
 **Result:** ✅ Wrapper script exists and is executable
 
@@ -127,7 +127,7 @@ codex-mem
 **Option 2: Manual Check**
 ```bash
 uni-mem show
-codex
+codex  # Starts Codex without the memory banner
 ```
 
 **Option 3: During Session**
@@ -165,6 +165,7 @@ uni-mem search "keyword"
 - File exists
 - Executable permissions set
 - Valid bash syntax
+- Dedupe window prevents duplicate banners on rapid restarts
 - **PASS**
 
 ### Test 5: Cross-System Visibility ✅
@@ -187,6 +188,7 @@ uni-mem search "keyword"
 - Displays memory before Codex starts
 - Shows context from all AI systems
 - Passes through all Codex arguments
+- 5-second dedupe window keeps startup output clean
 
 ### ✅ CLI Access
 - `uni-mem show --codex` filters Codex memories

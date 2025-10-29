@@ -136,18 +136,14 @@ else
 fi
 
 if [ -n "$CLAUDE_SETTINGS" ]; then
-    # Check if we need to update the hook
-    if grep -q "universal-memory" "$CLAUDE_SETTINGS" 2>/dev/null; then
-        echo -e "${GREEN}✓${NC} Claude Code hook already configured in $(basename $CLAUDE_SETTINGS)"
+    echo "   Configuring SessionStart hook in $(basename "$CLAUDE_SETTINGS")..."
+    if python3 "$REPO_DIR/scripts/configure-claude-hook.py" \
+        "$CLAUDE_SETTINGS" "$INSTALL_DIR/hooks/claude-session-start.sh"; then
+        echo -e "   ${GREEN}✓${NC} Claude Code hook configured"
     else
-        echo "   Adding SessionStart hook to Claude Code..."
-        # Backup existing settings
-        cp "$CLAUDE_SETTINGS" "$CLAUDE_SETTINGS.backup-$(date +%Y%m%d-%H%M%S)"
-
-        # This is a simplified approach - in production, use proper JSON parsing
-        # For now, inform user to manually add hook
-        echo -e "${YELLOW}⚠️  Please manually add the following to $CLAUDE_SETTINGS:${NC}"
+        echo -e "   ${YELLOW}⚠️  Unable to configure Claude Code hook automatically.${NC}"
         echo ""
+        echo -e "${YELLOW}Please add the following to $CLAUDE_SETTINGS:${NC}"
         echo '  "hooks": {'
         echo '    "SessionStart": [{'
         echo '      "matchers": ["startup", "resume"],'

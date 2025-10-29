@@ -79,6 +79,27 @@ Size: ~46KB
    - Old systems archived
    - Zero data loss
 
+### Post-Release Enhancements (2025-10-29)
+
+1. **Smart Session Dedupe**
+   - `hooks/load-memory.py` now skips duplicate banners within a short window
+   - Shared by Claude hook and Codex wrapper via unique dedupe keys
+   - Sentinel timestamps stored in `~/.universal-memory/runtime/`
+
+2. **Automated Claude Hook Configuration**
+   - Added `scripts/configure-claude-hook.py`
+   - Installer and updater call the script to keep `SessionStart` hooks in sync
+   - Creates timestamped backups before writing changes
+
+3. **Codex Wrapper Refinement**
+   - Wrapper prints the banner once and delegates to the real `codex`
+   - Uses dedupe guard to stay quiet on rapid restarts
+   - No shell function overrides required
+
+4. **Documentation Refresh**
+   - Updated README, docs, and status reports to describe the new behavior
+   - Added logging of enhancements for future tracking
+
 ---
 
 ## 🏗️ Architecture
